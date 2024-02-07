@@ -118,9 +118,9 @@ impl Config {
             Some(BitReversal::ByWord) => 0b11,
         };
 
-        crc.init.write(|w| unsafe { w.crc_init().bits(init) });
-        crc.pol.write(|w| unsafe { w.bits(poly) });
-        crc.cr.write(|w| unsafe {
+        crc.init().write(|w| unsafe { w.crc_init().bits(init) });
+        crc.pol().write(|w| unsafe { w.bits(poly) });
+        crc.cr().write(|w| unsafe {
             w.rev_in()
                 .bits(in_rev_bits)
                 .polysize()
@@ -148,7 +148,7 @@ impl Crc {
     pub fn reset(&mut self) {
         let crc = unsafe { &(*CRC::ptr()) };
 
-        crc.cr.modify(|_, w| w.reset().set_bit());
+        crc.cr().modify(|_, w| w.reset().set_bit());
     }
 
     /// This will reset the CRC to its initial condition, however with a specific initial value.
@@ -159,9 +159,9 @@ impl Crc {
     pub fn reset_with_inital_value(&mut self, initial_value: u32) {
         let crc = unsafe { &(*CRC::ptr()) };
 
-        crc.init
+        crc.init()
             .write(|w| unsafe { w.crc_init().bits(initial_value) });
-        crc.cr.modify(|_, w| w.reset().set_bit());
+        crc.cr().modify(|_, w| w.reset().set_bit());
     }
 
     /// Feed the CRC with data
@@ -169,7 +169,7 @@ impl Crc {
     pub fn feed(&mut self, data: &[u8]) {
         let crc = unsafe { &(*CRC::ptr()) };
         for byte in data {
-            let ptr = &crc.dr as *const _;
+            let ptr = &crc.dr() as *const _;
             unsafe { core::ptr::write_volatile(ptr as *mut u8, *byte) };
         }
     }
@@ -191,7 +191,7 @@ impl Crc {
     pub fn peek_result(&self) -> u32 {
         let crc = unsafe { &(*CRC::ptr()) };
 
-        crc.dr.read().bits()
+        crc.dr().read().bits()
     }
 }
 
